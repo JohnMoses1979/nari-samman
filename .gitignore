@@ -1,0 +1,13 @@
+repomix-output.xml
+backend/uploads/
+backend/target/
+backend/backend-start.log
+backend/backend-start.err.log
+backend/.env
+.env
+node_modules/
+dist/
+build/
+*.log
+*.pem
+*.key
