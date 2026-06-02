@@ -1,13 +1,39 @@
-repomix-output.xml
-backend/uploads/
-backend/target/
-backend/backend-start.log
-backend/backend-start.err.log
-backend/.env
+# Environment secrets
 .env
+.env.*
+!.env.example
+backend/.env
+nari-samman/.env
+
+# Node / Expo
+nari-samman/node_modules/
+nari-samman/dist/
+nari-samman/.expo/
 node_modules/
 dist/
-build/
+.expo/
+
+# Backend build/output
+backend/target/
+backend/uploads/
+backend/backend-start.log
+backend/backend-start.err.log
+target/
+uploads/
+
+# Docker / logs / keys
 *.log
 *.pem
 *.key
+
+# Backup files created during fixes
+*.bak
+*.backup*
+*.backup-*
+*.before-*
+*.broken-*
+*.old
+src/**/*.backup*
+nari-samman/src/**/*.backup*
+nari-samman/src/webStableScroll.js.backup*
+repomix-output.xml

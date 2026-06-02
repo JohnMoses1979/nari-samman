@@ -27,15 +27,28 @@
       "permissions": [
         "RECORD_AUDIO"
       ],
-      "package": "com.kalyanag.narisamman"
+      "package": "com.kalyanag.narisamman",
+      "usesCleartextTraffic": true,
+      "versionCode": 2
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
     "extra": {
       "eas": {
-        "projectId": "80cd28ce-78cc-4964-bfcb-73450401b373"
+        "projectId": "ada2c49a-ad89-46b9-a9ae-e042ce1373bb"
       }
-    }
+    },
+    "owner": "jayanthi123",
+    "plugins": [
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "usesCleartextTraffic": true
+          }
+        }
+      ]
+    ]
   }
 }

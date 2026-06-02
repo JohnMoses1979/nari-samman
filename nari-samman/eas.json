@@ -1,27 +1,29 @@
 {
   "cli": {
-    "version": ">= 18.13.0",
+    "version": ">= 13.0.0",
     "appVersionSource": "remote"
   },
   "build": {
-    "development": {
-      "developmentClient": true,
-      "distribution": "internal"
-    },
     "preview": {
       "distribution": "internal",
       "android": {
         "buildType": "apk"
+      },
+      "env": {
+        "EXPO_PUBLIC_API_URL": "http://13.207.19.48:8080",
+        "EXPO_PUBLIC_API_BASE_URL": "http://13.207.19.48:8080",
+        "APP_BASE_URL": "http://13.207.19.48:8080"
       }
     },
     "production": {
-      "autoIncrement": true,
       "android": {
         "buildType": "app-bundle"
+      },
+      "env": {
+        "EXPO_PUBLIC_API_URL": "http://13.207.19.48:8080",
+        "EXPO_PUBLIC_API_BASE_URL": "http://13.207.19.48:8080",
+        "APP_BASE_URL": "http://13.207.19.48:8080"
       }
     }
-  },
-  "submit": {
-    "production": {}
   }
 }

@@ -1,9 +1,6 @@
 package com.example.nari.controller;
 
-import com.example.nari.dto.OtpRequest;
-import com.example.nari.dto.OtpVerifyRequest;
 import com.example.nari.service.TwilioService;
-import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,52 +17,101 @@ public class OtpController {
         this.twilioService = twilioService;
     }
 
-    /**
-     * POST /api/otp/send Public — no JWT needed. Sends OTP to the given
-     * 10-digit Indian mobile number.
-     */
+    private String getValue(Map<String, Object> body, String... keys) {
+        for (String key : keys) {
+            Object value = body.get(key);
+            if (value != null && !String.valueOf(value).trim().isEmpty()) {
+                return String.valueOf(value).trim();
+            }
+        }
+        return null;
+    }
+
+    private String normalizeIndianPhone(String value) {
+        if (value == null) return null;
+
+        String phone = value.trim()
+                .replace(" ", "")
+                .replace("-", "")
+                .replace("(", "")
+                .replace(")", "");
+
+        if (phone.startsWith("+91")) {
+            phone = phone.substring(3);
+        } else if (phone.startsWith("91") && phone.length() == 12) {
+            phone = phone.substring(2);
+        }
+
+        if (!phone.matches("^[6-9]\\d{9}$")) {
+            return null;
+        }
+
+        return "+91" + phone;
+    }
+
     @PostMapping("/send")
-    public ResponseEntity<?> sendOtp(@Valid @RequestBody OtpRequest request) {
+    public ResponseEntity<?> sendOtp(@RequestBody Map<String, Object> body) {
         try {
-            String phoneE164 = "+91" + request.getPhone();
+            String rawPhone = getValue(body, "phone", "mobileNumber", "phoneNumber", "mobile", "number");
+            String phoneE164 = normalizeIndianPhone(rawPhone);
+
+            if (phoneE164 == null) {
+                return ResponseEntity.badRequest().body(Map.of(
+                        "success", false,
+                        "message", "Valid 10-digit Indian mobile number is required"
+                ));
+            }
+
             twilioService.sendOtp(phoneE164);
+
             return ResponseEntity.ok(Map.of(
                     "success", true,
-                    "message", "OTP sent successfully to +91" + request.getPhone()
+                    "message", "OTP sent successfully to " + phoneE164
             ));
         } catch (Exception e) {
             return ResponseEntity.internalServerError().body(Map.of(
                     "success", false,
-                    "message", "Failed to send OTP. Please check the number and try again."
+                    "message", e.getMessage()
             ));
         }
     }
 
-    /**
-     * POST /api/otp/verify Public — no JWT needed. Verifies OTP code entered by
-     * the user.
-     */
     @PostMapping("/verify")
-    public ResponseEntity<?> verifyOtp(@Valid @RequestBody OtpVerifyRequest request) {
+    public ResponseEntity<?> verifyOtp(@RequestBody Map<String, Object> body) {
         try {
-            String phoneE164 = "+91" + request.getPhone();
-            boolean approved = twilioService.verifyOtp(phoneE164, request.getCode());
+            String rawPhone = getValue(body, "phone", "mobileNumber", "phoneNumber", "mobile", "number");
+            String rawCode = getValue(body, "code", "otp", "otpCode", "verificationCode");
+
+            String phoneE164 = normalizeIndianPhone(rawPhone);
+
+            if (phoneE164 == null || rawCode == null) {
+                return ResponseEntity.badRequest().body(Map.of(
+                        "success", false,
+                        "verified", false,
+                        "message", "Valid phone number and OTP code are required"
+                ));
+            }
+
+            boolean approved = twilioService.verifyOtp(phoneE164, rawCode);
 
             if (approved) {
                 return ResponseEntity.ok(Map.of(
                         "success", true,
+                        "verified", true,
                         "message", "Mobile number verified successfully"
                 ));
-            } else {
-                return ResponseEntity.badRequest().body(Map.of(
-                        "success", false,
-                        "message", "Invalid or expired OTP. Please try again."
-                ));
             }
+
+            return ResponseEntity.badRequest().body(Map.of(
+                    "success", false,
+                    "verified", false,
+                    "message", "Invalid or expired OTP. Please try again."
+            ));
         } catch (Exception e) {
             return ResponseEntity.internalServerError().body(Map.of(
                     "success", false,
-                    "message", "Verification failed. Please try again."
+                    "verified", false,
+                    "message", e.getMessage()
             ));
         }
     }
