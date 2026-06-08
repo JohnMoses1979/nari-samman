@@ -1,0 +1,53 @@
+name: Deploy Nari Samman
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: Deploy to EC2
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Configure SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/ec2_key
+          chmod 600 ~/.ssh/ec2_key
+          ssh-keyscan -H "${{ secrets.EC2_HOST }}" >> ~/.ssh/known_hosts
+
+      - name: Deploy on EC2
+        run: |
+          ssh -i ~/.ssh/ec2_key "${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}" << 'EOF'
+            set -e
+
+            cd "${{ secrets.EC2_PROJECT_PATH }}"
+
+            echo "Pulling latest code..."
+            git fetch origin main
+            git reset --hard origin/main
+
+            echo "Checking docker compose..."
+            sudo docker compose config --quiet
+
+            echo "Building containers..."
+            sudo docker compose build --no-cache
+
+            echo "Starting containers..."
+            sudo docker compose up -d --force-recreate
+
+            echo "Cleaning old docker images..."
+            sudo docker image prune -f
+
+            echo "Running containers:"
+            sudo docker ps
+
+            echo "Testing app..."
+            curl -I http://localhost:8080 || true
+          EOF
