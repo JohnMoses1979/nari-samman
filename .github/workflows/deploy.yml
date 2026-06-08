@@ -18,8 +18,9 @@ jobs:
       - name: Configure SSH
         run: |
           mkdir -p ~/.ssh
-          echo "${{ secrets.EC2_SSH_KEY_B64 }}" | base64 -d > ~/.ssh/ec2_key
+          printf '%s' "${{ secrets.EC2_SSH_KEY_B64 }}" | base64 -d > ~/.ssh/ec2_key
           chmod 600 ~/.ssh/ec2_key
+          ssh-keygen -y -f ~/.ssh/ec2_key > /dev/null
           ssh-keyscan -H "${{ secrets.EC2_HOST }}" >> ~/.ssh/known_hosts
 
       - name: Test SSH connection
@@ -37,7 +38,7 @@ jobs:
             git fetch origin main
             git reset --hard origin/main
 
-            echo "Checking Docker Compose..."
+            echo "Checking docker compose..."
             sudo docker compose config --quiet
 
             echo "Building containers..."
@@ -46,7 +47,7 @@ jobs:
             echo "Starting containers..."
             sudo docker compose up -d --force-recreate
 
-            echo "Cleaning old images..."
+            echo "Cleaning old Docker images..."
             sudo docker image prune -f
 
             echo "Running containers:"
