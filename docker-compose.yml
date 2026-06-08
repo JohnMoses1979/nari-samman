@@ -15,7 +15,7 @@ services:
     networks:
       - nari-net
     healthcheck:
-      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u$${MYSQL_USER} -p$${MYSQL_PASSWORD} || exit 1"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}"]
       interval: 10s
       timeout: 5s
       retries: 10
@@ -24,29 +24,27 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
+    image: nari-samman-backend
     container_name: nari-samman-backend
     restart: unless-stopped
     env_file:
       - ./.env
     environment:
       SERVER_PORT: 8080
-      DB_HOST: mysql
-      DB_PORT: 3306
-      DB_NAME: ${DB_NAME}
-      DB_USER: ${DB_USER}
-      DB_PASSWORD: ${DB_PASSWORD}
-      APP_BASE_URL: ${APP_BASE_URL}
-      GROQ_API_KEY: ${GROQ_API_KEY}
-      TWILIO_ACCOUNT_SID: ${TWILIO_ACCOUNT_SID}
-      TWILIO_AUTH_TOKEN: ${TWILIO_AUTH_TOKEN}
-      TWILIO_VERIFY_SERVICE_SID: ${TWILIO_VERIFY_SERVICE_SID}
       SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/${DB_NAME}?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
       SPRING_DATASOURCE_USERNAME: ${DB_USER}
       SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
-      KYC_UPLOAD_DIR: /app/uploads/kyc
-      PRODUCT_UPLOAD_DIR: /app/uploads/products
-    ports:
-      - "8080:8080"
+      ADMIN_EMAIL: ${ADMIN_EMAIL}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+      ADMIN_ENABLED: ${ADMIN_ENABLED}
+      ADMIN_ALLOW_DEFAULT_CREDENTIALS: ${ADMIN_ALLOW_DEFAULT_CREDENTIALS}
+      APP_BASE_URL: http://13.207.19.48:8080
+      TWILIO_ACCOUNT_SID: ${TWILIO_ACCOUNT_SID}
+      TWILIO_AUTH_TOKEN: ${TWILIO_AUTH_TOKEN}
+      TWILIO_VERIFY_SERVICE_SID: ${TWILIO_VERIFY_SERVICE_SID}
+      GROQ_API_KEY: ${GROQ_API_KEY}
+    expose:
+      - "8080"
     volumes:
       - backend_uploads:/app/uploads
     depends_on:
@@ -60,12 +58,14 @@ services:
       context: ./nari-samman
       dockerfile: Dockerfile
       args:
-        EXPO_PUBLIC_API_URL: ${EXPO_PUBLIC_API_URL}
-        EXPO_PUBLIC_API_BASE_URL: ${EXPO_PUBLIC_API_BASE_URL}
+        EXPO_PUBLIC_API_URL: http://13.207.19.48:8080
+        EXPO_PUBLIC_API_BASE_URL: http://13.207.19.48:8080
+        APP_BASE_URL: http://13.207.19.48:8080
+    image: nari-samman-frontend
     container_name: nari-samman-frontend
     restart: unless-stopped
     ports:
-      - "8081:80"
+      - "8080:80"
     depends_on:
       - backend
     networks:

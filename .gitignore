@@ -1,39 +1,30 @@
-# Environment secrets
+# env/secrets
 .env
 .env.*
 !.env.example
 backend/.env
 nari-samman/.env
 
-# Node / Expo
-nari-samman/node_modules/
-nari-samman/dist/
-nari-samman/.expo/
+# node/expo
 node_modules/
+nari-samman/node_modules/
 dist/
+nari-samman/dist/
 .expo/
+nari-samman/.expo/
 
-# Backend build/output
-backend/target/
-backend/uploads/
-backend/backend-start.log
-backend/backend-start.err.log
+# backend build
 target/
+backend/target/
 uploads/
+backend/uploads/
 
-# Docker / logs / keys
+# logs/keys/backups
 *.log
 *.pem
 *.key
-
-# Backup files created during fixes
 *.bak
 *.backup*
-*.backup-*
-*.before-*
-*.broken-*
 *.old
-src/**/*.backup*
-nari-samman/src/**/*.backup*
-nari-samman/src/webStableScroll.js.backup*
+*backup*
 repomix-output.xml
